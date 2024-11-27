@@ -1,1 +1,7 @@
-streamlit
+# Core libraries
+streamlit>=1.25.0
+openperplex>=1.0.0  # Use the latest version of OpenPerplex
+
+# Speech recognition
+SpeechRecognition>=3.8.1
+pyaudio>=0.2.11
