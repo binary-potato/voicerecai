@@ -5,3 +5,11 @@ openperplex>=1.0.0  # Use the latest version of OpenPerplex
 # Speech recognition
 SpeechRecognition>=3.8.1
 pyaudio>=0.2.11
+
+# Optional but recommended additional dependencies
+python-dotenv>=0.21.0  # For managing environment variables
+typing-extensions>=4.5.0  # Type hinting support
+
+# Recommended for better error handling and logging
+rich>=10.0.0  # Enhanced console output
+```
