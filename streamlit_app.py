@@ -1,6 +1,11 @@
 import streamlit as st
-import speech_recognition as sr
 from openperplex import OpenperplexSync
+
+try:
+    import speech_recognition as sr
+    SPEECH_RECOGNITION_AVAILABLE = True
+except ImportError:
+    SPEECH_RECOGNITION_AVAILABLE = False
 
 class VoiceChatbot:
     def __init__(self, api_key):
@@ -13,21 +18,22 @@ class VoiceChatbot:
     
     def transcribe_audio(self):
         """Transcribe audio from microphone input"""
-        recognizer = sr.Recognizer()
-        
-        with sr.Microphone() as source:
-            st.info("Listening... Speak now.")
-            recognizer.adjust_for_ambient_noise(source, duration=1)
-            audio = recognizer.listen(source)
+        if not SPEECH_RECOGNITION_AVAILABLE:
+            st.warning("Speech recognition is not available. Please use text input.")
+            return None
         
         try:
+            recognizer = sr.Recognizer()
+            
+            with sr.Microphone() as source:
+                st.info("Listening... Speak now.")
+                recognizer.adjust_for_ambient_noise(source, duration=1)
+                audio = recognizer.listen(source)
+            
             text = recognizer.recognize_google(audio)
             return text
-        except sr.UnknownValueError:
-            st.error("Sorry, could not understand audio.")
-            return None
-        except sr.RequestError as e:
-            st.error(f"Could not request results; {e}")
+        except Exception as e:
+            st.error(f"Speech recognition error: {e}")
             return None
     
     def generate_response(self, query):
@@ -51,32 +57,36 @@ class VoiceChatbot:
     
     def run(self):
         # Streamlit UI
-        st.title("🎙️ OpenPerplex Voice Chatbot")
+        st.title("🤖 OpenPerplex Chatbot")
         
         # Sidebar for Voice Input
         with st.sidebar:
-            st.header("Voice Interaction")
+            st.header("Interaction Options")
             
-            # Voice Input Button
-            if st.button("🎤 Start Voice Input"):
-                voice_input = self.transcribe_audio()
-                
-                if voice_input:
-                    # Display transcribed text
-                    st.write(f"You said: {voice_input}")
+            # Conditionally show voice input based on availability
+            if SPEECH_RECOGNITION_AVAILABLE:
+                # Voice Input Button
+                if st.button("🎤 Start Voice Input"):
+                    voice_input = self.transcribe_audio()
                     
-                    # Generate response
-                    response = self.generate_response(voice_input)
-                    
-                    # Store conversation
-                    st.session_state.messages.append({
-                        "role": "user", 
-                        "content": voice_input
-                    })
-                    st.session_state.messages.append({
-                        "role": "assistant", 
-                        "content": response
-                    })
+                    if voice_input:
+                        # Display transcribed text
+                        st.write(f"You said: {voice_input}")
+                        
+                        # Generate response
+                        response = self.generate_response(voice_input)
+                        
+                        # Store conversation
+                        st.session_state.messages.append({
+                            "role": "user", 
+                            "content": voice_input
+                        })
+                        st.session_state.messages.append({
+                            "role": "assistant", 
+                            "content": response
+                        })
+            else:
+                st.warning("Speech recognition is not available.")
         
         # Display Chat History
         st.header("Chat History")
@@ -104,7 +114,7 @@ class VoiceChatbot:
             st.experimental_rerun()
 
 def main():
-    st.set_page_config(page_title="OpenPerplex Voice Chatbot")
+    st.set_page_config(page_title="OpenPerplex Chatbot")
     
     # API Key input
     api_key = st.text_input("Enter your OpenPerplex API Key", type="password")
